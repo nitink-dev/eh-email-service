@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dicom-proxy
+  namespace: dicomproxysvc-ns
+spec:
+  clusterIP: None
+  selector:
+    app: dicom-proxy-svc
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dicom-proxy-svc
+  namespace: dicomproxysvc-ns
+  annotations:
+    cloud.google.com/load-balancer-type: "Internal"
+spec:
+  type: LoadBalancer
+
+  selector:
+    app: dicom-proxy-svc
+
+  ports:
+    - name: https
+      port: 443
+      targetPort: 443

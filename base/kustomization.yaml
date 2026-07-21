@@ -1,0 +1,9 @@
+resources:
+  - rbac.yaml
+  - autoscale.yaml
+  - pdb.yaml
+  - config-map.yaml
+  - emailsvc-service.yaml
+  - emailsvc-deploy.yaml
+  - dicom-proxy-service.yaml
+  - dicom-proxy-deploy.yaml

@@ -1,0 +1,247 @@
+email:
+  templates:
+    MAX_RETRIES_REACHED:
+      subject: 'Enrichment Notification - Technical Error Encountered for Slide- ${barcode}'
+      body: |
+        Dear Team,
+        
+        We would like to inform you that the enrichment process for slide with Barcode- ${barcode} has failed due to a technical error.
+        
+        Error Code: [ET_305]
+        
+        To resolve this issue, please reach out to our technical support team at [insert support contact information]. They will assist you in diagnosing and addressing the error promptly.
+        
+        We apologize for any inconvenience this may have caused and appreciate your cooperation.
+        
+        If you have any further questions, feel free to contact us.
+        
+        Best regards,
+        Digital Pathology Team
+    MISSING_BARCODE:
+      subject: 'Enrichment Notification - Process Failure Notification – Barcode Not Available for Slide'
+      body: |
+        Dear Team,
+        
+        We would like to inform you that the enrichment process for slide has failed as the Barcode value for the slide is missing in the metadata.
+        
+        To resolve this issue, please reach out to our support team at [insert support contact information]. They will assist you in diagnosing and addressing the error promptly.
+        
+        We apologize for any inconvenience this may have caused and appreciate your cooperation.
+        
+        If you have any further questions, feel free to contact us.
+        
+        Best regards,
+        Digital Pathology Team'
+    QUERY_INCORRECT:
+      subject: 'Enrichment Notification - Technical Error Encountered for Slide- ${barcode}'
+      body: |
+        Dear Team,
+
+        We would like to inform you that the enrichment process for slide with Barcode- ${barcode} has failed due to a technical error.
+
+        Error Code: [ET_304]
+
+        To resolve this issue, please reach out to our technical support team at [insert support contact information]. They will assist you in diagnosing and addressing the error promptly.
+
+        We apologize for any inconvenience this may have caused and appreciate your cooperation.
+
+        If you have any further questions, feel free to contact us.
+
+        Best regards,
+        Digital Pathology Team'
+    NO_RESPONSE_FROM_LIS:
+      subject: 'Enrichment Notification - Technical Error Encountered for Slide- ${barcode}'
+      body: |
+        Dear Team,
+
+        We would like to inform you that the enrichment process for slide with Barcode- ${barcode} has failed due to a technical error.
+
+        Error Code: [ET_303]
+
+        To resolve this issue, please reach out to our technical support team at [insert support contact information]. They will assist you in diagnosing and addressing the error promptly.
+
+        We apologize for any inconvenience this may have caused and appreciate your cooperation.
+
+        If you have any further questions, feel free to contact us.
+
+        Best regards,
+        Digital Pathology Team'
+    YAML_UNAVAILABLE:
+      subject: 'Enrichment Notification - Technical Error Encountered '
+      body: |
+        Dear Team,
+
+        We would like to inform you that the enrichment process for slide has failed due to a technical error.
+
+        Error Code: [ET_302]
+
+        To resolve this issue, please reach out to our technical support team at [insert support contact information]. They will assist you in diagnosing and addressing the error promptly.
+
+        We apologize for any inconvenience this may have caused and appreciate your cooperation.
+
+        If you have any further questions, feel free to contact us.
+
+        Best regards,
+        Digital Pathology Team'
+    NEGATIVE_QUERY:
+      subject: 'Enrichment Notification - Enrichment Process Failed – Barcode ${barcode}'
+      body: |
+        Dear Team,
+        
+        We would like to inform you that the enrichment process for the slide associated with Barcode ${barcode} could not be completed. This is due to the application receiving a Negative Query Response from the Laboratory Information System (LIS).
+        
+        This response typically indicates that either the case details for the specified barcode are not available in the LIS, or the LIS was unable to identify the case using the barcode provided in the query message.
+        
+        To resolve this issue, please contact our technical support team at [insert support contact information]. They will assist you in investigating and addressing the error.
+        
+        We apologize for any inconvenience this may have caused and appreciate your understanding.
+        
+        If you have any further questions, please feel free to reach out.
+        
+        Best regards,
+        Digital Pathology Team'
+    DICOMDIR_UNAVAILABLE:
+      subject: 'Enrichment Notification - Technical Error Encountered for Slide- ${barcode}'
+      body: |
+        Dear Team,
+
+        We would like to inform you that the enrichment process for slide with Barcode- ${barcode} has failed due to a technical error.
+
+        Error Code: [ET_301]
+
+        To resolve this issue, please reach out to our technical support team at [insert support contact information]. They will assist you in diagnosing and addressing the error promptly.
+
+        We apologize for any inconvenience this may have caused and appreciate your cooperation.
+
+        If you have any further questions, feel free to contact us.
+
+        Best regards,
+        Digital Pathology Team'
+    DELETION_FROM_INTERMEDIATE_STORAGE:
+      subject: 'Enrichment Notification -  Deletion Notice: Removal of Failed Instances'
+      body: |
+        Dear Team,
+        
+        We are writing to inform you that certain DICOM instances associated with the Slide- ${barcode} have failed to process successfully.
+
+        These instances did not meet the required processing criteria and will be automatically removed to maintain data integrity and system performance.
+        
+        Thank you for your attention.
+        
+        Best regards,
+        Digital Pathology Team'
+    CODE_SET_MAPPING_FIELD_MISSING:
+      subject: 'Enrichment Notification - Code Mapping Notification : Code Not Found'
+      body: |
+        Dear Team,
+        
+        This is to inform you that stain information code- ${missingTag} for slide- ${barcode} could not be found in the reference mapping and hence was not added.
+        
+        Please review the code to verify:
+        - If it was entered correctly.
+        - If this is a new code that requires updating mapping reference that includes this code.
+        
+        Feel free to reach out if you need any assistance or clarification.
+        
+        Best regards,
+        Digital Pathology Team'
+    IBEX_SLIDE_DOWNLOAD_COMPLETED:
+      subject: 'Completion of Slide Download'
+      body: |
+        Hi ,
+        
+        We are pleased to inform you that the slide with ID- ${barcode} has been successfully downloaded in IBEX application. IBEX application will start analysing the slide now. 
+        We will notify you once the slide analysis is available for review.
+        
+        Yours sincerely,
+        Digital Pathology Team
+    IBEX_SLIDE_DOWNLOAD_FAILED:
+      subject: 'Notification of Download Error'
+      body: |
+        Hi ,
+
+        We regret to inform you that an error occurred during downloading the slide with ID- ${barcode}.
+
+        Our technical team is actively working to resolve this issue. We will notify you as soon as the issue is resolved.
+
+        Thank you for your patience. 
+        
+        Yours sincerely,  
+        Digital Pathology Team
+
+    IBEX_CLASSIFICATION_FINISHED:
+      subject: 'Completion of Slide Processing - Available for Review'
+      body: |
+        Hi ,
+
+        We are pleased to inform you that the processing of slide with ID- ${barcode} has been successfully completed. 
+        You may now review the slide at your earliest convenience by logging into IBEX application using your credentials.
+
+        Yours sincerely,  
+        Digital Pathology Team
+
+    IBEX_CLASSIFICATION_FAILED:
+      subject: 'Notification of Processing Error'
+      body: |
+        Hi ,
+
+        We regret to inform you that an error occurred during the processing of your slide with ID- ${barcode}. 
+        As a result, the slide is currently unavailable for review.
+
+        Our technical team is actively working to resolve this issue. We will notify you as soon as the processing is successfully completed.
+
+        Thank you for your patience. 
+        
+        Yours sincerely,  
+        Digital Pathology Team
+
+    IBEX_INVALID_SLIDE:
+      subject: 'Notification of Invalid Slide'
+      body: |
+        Hi ,
+
+        We regret to inform you that we were not able to process slide with ID- ${barcode} as it is an invalid slide.
+
+        Please check if the slide barcode and associated case information is valid and it fulfils the criteria for slide analysis.
+
+        If the slide details are correct, you can try again by rescanning the file.
+
+        Thank you for your patience.  
+        
+        Yours sincerely,  
+        Digital Pathology Team
+
+    IBEX_REPORT_SUBMITTED:
+      subject: 'Completion of Report'
+      body: |
+        Hi ,
+
+        We are pleased to inform you that the report for slide with ID- ${barcode} has been successfully completed. 
+        You may now view the report at your earliest convenience by logging into IBEX application using your credentials.
+
+        Yours sincerely,  
+        Digital Pathology Team
+
+    IBEX_UNSUPPORTED_EVENT:
+      subject: 'Unsupported Event Type'
+      body: |
+        Hi ,
+
+        We received an unsupported event type: ${eventType}.
+        Please contact our support team for further assistance.
+
+        Yours sincerely,  
+        Digital Pathology Team
+    IBEX_SLIDE_CREATION_ERROR:
+      subject: 'Slide Analysis Failure Notification – Technical Error Encountered'
+      body: |
+        Hi,
+        
+        We regret to inform you that the slide analysis for slide- ${barcode} has failed due to a technical error.
+        Error Code: ${errorCode} - ${errorMessage}
+        We apologize for the inconvenience caused and appreciate your patience and understanding.
+        
+        If you have any questions or require further assistance, please feel free to contact us at [insert contact information].
+        
+        Yours sincerely,  
+        Digital Pathology Team

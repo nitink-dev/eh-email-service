@@ -1,0 +1,32 @@
+resources:
+  - ../../base
+
+patches:
+  - path: svc_account_proxy_patch.yaml
+    target: 
+      kind: ServiceAccount
+      name: proxy-sa
+      namespace: dicomproxysvc-ns
+
+  - target:
+      kind: Service
+      name: dicom-proxy-svc
+      namespace: dicomproxysvc-ns
+    path: service_proxy_patch.yaml
+
+  - path: svc_account_patch.yaml
+    target: 
+      kind: ServiceAccount
+      name: emailsvc-sa
+      namespace: emailsvc-ns
+
+  - target:
+      kind: Service
+      name: email-svc
+      namespace: emailsvc-ns
+    path: service_patch.yaml
+
+images:
+  - name: IMAGE_PATH
+    newName: us-central1-docker.pkg.dev/prj-d-dp/email-svc/email_svc-image
+    newTag: ${IMAGE_TAG}

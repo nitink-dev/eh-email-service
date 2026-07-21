@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: eh-email-service
+  config:
+    import: optional:file:config/email-template.yml
+  main:
+    banner-mode: log
+  mail:
+#    username: EnrichmentService@northshore.org
+#    password: zrpt hifk ytcm gfia
+    host: 10.126.8.49
+    port: 25
+    smtp:
+      auth: false
+      starttls:
+        enable: false
+
+server:
+  port: 8093
+
+kafka:
+  topic:
+    email: email-svc-topic
+
+
+email:
+  to: "preeti.ankam@citiustech.com,preeti.ankam@ahead.com"
+  from: EnrichmentService@northshore.org
+  ibex-to: "preeti.ankam@citiustech.com,Gitesh.Shelar@citiustech.com"
+
