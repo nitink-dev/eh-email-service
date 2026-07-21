@@ -23,7 +23,11 @@ public class EmailTemplateConfig {
     }
 
     public EmailTemplate getTemplate(String key) {
-        return templates.getOrDefault(key, new EmailTemplate());
+    EmailTemplate template = templates.get(key);
+    if (template != null) {
+        return template;
     }
+    return templates.getOrDefault("ENTITY_CHANGE_DEFAULT", new EmailTemplate());
+}
 
 }

@@ -5,6 +5,7 @@ import com.eh.digitalpathology.email.config.EmailTemplateConfig;
 import com.eh.digitalpathology.email.model.EmailMessagePayload;
 import com.eh.digitalpathology.email.model.EmailTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
@@ -15,6 +16,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
 import java.util.Objects;
 
 @Service
@@ -47,6 +49,15 @@ public class EmailService {
         try {
             if (Objects.nonNull(emailTemplate.getSubject()) &&
                     Objects.nonNull(emailTemplate.getBody())) {
+
+                if (value.trim().startsWith("{")) {
+                    JsonNode node = objectMapper.readTree(value);
+                    if (node.has("entityType") && node.has("newData")) {
+                        sendEntityChangeEmail(emailTemplate, node);
+                        return;
+                    }
+                }
+
                 String subjectTemplate = emailTemplate.getSubject();
                 String bodyTemplate = emailTemplate.getBody();
                 String subject = "";
@@ -55,10 +66,8 @@ public class EmailService {
                 EmailMessagePayload payload ;
 
                 if (value.trim().startsWith("{")) {
-                    // Deserialize JSON into payload
                     payload = objectMapper.readValue(value, EmailMessagePayload.class);
                 } else {
-                    // Handle plain string by wrapping it in a payload
                     payload = new EmailMessagePayload();
                     payload.setBarcode(value);
                 }
@@ -79,6 +88,30 @@ public class EmailService {
         } catch (JsonProcessingException e) {
             log.error("sendEmail :: JsonProcessingException while sending the email ", e);
         }
+    }
+
+    private void sendEntityChangeEmail(EmailTemplate emailTemplate, JsonNode node) {
+        String entityType = node.path("entityType").asText();
+        String changes = buildChangeSummary(node.path("oldData"), node.path("newData"));
+        String subject = emailTemplate.getSubject().replace("${entityType}", entityType);
+        String body = emailTemplate.getBody()
+                .replace("${entityType}", entityType)
+                .replace("${changes}", changes);
+        sendEmailMessage(emailConfig.getTo(), body, subject);
+    }
+
+    private String buildChangeSummary(JsonNode oldData, JsonNode newData) {
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> fieldNames = newData.fieldNames();
+        while (fieldNames.hasNext()) {
+            String field = fieldNames.next();
+            JsonNode oldVal = oldData.path(field);
+            JsonNode newVal = newData.path(field);
+            if (!Objects.equals(oldVal, newVal)) {
+                sb.append(field).append(": ").append(oldVal.asText("-")).append(" -> ").append(newVal.asText("-")).append("\n");
+            }
+        }
+        return sb.length() == 0 ? "No changes detected." : sb.toString();
     }
 
     private String populateEmailBody(String template, EmailMessagePayload payload) {

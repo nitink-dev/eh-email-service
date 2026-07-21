@@ -23,4 +23,16 @@ management:
     loggers:
       enabled: true
 
-      
+email:
+  templates:
+    ENTITY_CHANGE_DEFAULT:
+      subject: '${entityType} Configuration Updated'
+      body: |
+        Hi,
+
+        The following changes were made to ${entityType}:
+
+        ${changes}
+
+        Yours sincerely,
+        Digital Pathology Team
