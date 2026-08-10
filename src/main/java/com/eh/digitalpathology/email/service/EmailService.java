@@ -77,7 +77,7 @@ public class EmailService {
                     subject = populateEmailBody(subjectTemplate, payload);
                     body = populateEmailBody(bodyTemplate, payload);
                 }
-                sendEmailMessage(recipientList, body, subject);
+                sendEmailMessage(recipientList, body, subject, false);
             } else {
                 log.info("sendEmail :: Subject and Body for the key {} not found. ", key);
             }
@@ -88,12 +88,17 @@ public class EmailService {
 
     private void sendEntityChangeEmail(EmailTemplate emailTemplate, JsonNode node) {
         String entityType = node.path("entityType").asText();
-        String changes = buildChangeSummary(node.path("oldData"), node.path("newData"));
+        String changesHtml = buildChangeSummary(node.path("oldData"), node.path("newData"));
         String subject = emailTemplate.getSubject().replace("${entityType}", entityType);
-        String body = emailTemplate.getBody().replace("${entityType}", entityType).replace("${changes}", changes);
-        sendEmailMessage(emailConfig.getTo(), body, subject);
+        String body = emailTemplate.getBody().replace("${entityType}", entityType).replace("${changes}", changesHtml);
+        sendEmailMessage(emailConfig.getTo(), body, subject, true);
     }
 
+    /**
+     * Builds an HTML table body (tbody rows only) showing old vs new values
+     * for every field that changed. The surrounding <table>/<thead> markup
+     * lives in the email template itself (see ENTITY_CHANGE_DEFAULT).
+     */
     private String buildChangeSummary(JsonNode oldData, JsonNode newData) {
 
         StringBuilder sb = new StringBuilder();
@@ -107,15 +112,53 @@ public class EmailService {
             JsonNode oldVal = oldData.path(field);
             JsonNode newVal = newData.path(field);
             if (!Objects.equals(oldVal, newVal)) {
+                String rowBackground = (changedFieldsCount % 2 == 0) ? "#ffffff" : "#f9fafb";
+                String oldText = escapeHtml(oldVal.asText("-"));
+                String newText = escapeHtml(newVal.asText("-"));
+
+                sb.append("<tr style=\"background-color:").append(rowBackground).append(";\">")
+                        .append("<td style=\"padding:10px 12px;font-size:13px;color:#333333;border-bottom:1px solid #eeeeee;font-weight:600;\">")
+                        .append(escapeHtml(field))
+                        .append("</td>")
+                        .append("<td style=\"padding:10px 12px;font-size:13px;color:#c0392b;border-bottom:1px solid #eeeeee;\">")
+                        .append(oldText)
+                        .append("</td>")
+                        .append("<td style=\"padding:10px 12px;font-size:13px;color:#27ae60;border-bottom:1px solid #eeeeee;\">")
+                        .append(newText)
+                        .append("</td>")
+                        .append("</tr>\n");
+
                 changedFieldsCount++;
-                sb.append(field).append(": ").append(oldVal.asText("-")).append(" -> ").append(newVal.asText("-")).append("\n");
             } else {
                 log.debug("No change detected for field='{}'", field);
             }
         }
+
+        if (changedFieldsCount == 0) {
+            sb.append("<tr><td colspan=\"3\" style=\"padding:12px;font-size:13px;color:#888888;text-align:center;\">")
+                    .append("No field changes detected.")
+                    .append("</td></tr>");
+        }
+
         log.info("Completed buildChangeSummary. Total fields processed={}, Changed fields={}", totalFieldsProcessed, changedFieldsCount);
-        log.debug("Final change summary:\n{}", sb);
+        log.debug("Final change summary HTML:\n{}", sb);
         return sb.toString();
+    }
+
+    /**
+     * Minimal HTML escaper so field names/values coming from JSON data
+     * can never break the generated table markup.
+     */
+    private String escapeHtml(String input) {
+        if (input == null) {
+            return "-";
+        }
+        return input
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 
     private String populateEmailBody(String template, EmailMessagePayload payload) {
@@ -138,13 +181,13 @@ public class EmailService {
         return body;
     }
 
-    private void sendEmailMessage(String recipientList, String body, String subject) {
+    private void sendEmailMessage(String recipientList, String body, String subject, boolean isHtml) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setFrom(new InternetAddress(emailConfig.getFrom()));
             setRecipients(helper, recipientList);
-            helper.setText(body);
+            helper.setText(body, isHtml);
             helper.setSubject(subject);
             mailSender.send(message);
             log.info("sendEmail :: Email sent successfully.");
