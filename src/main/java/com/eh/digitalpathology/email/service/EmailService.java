@@ -49,7 +49,11 @@ public class EmailService {
                 if (value.trim().startsWith("{")) {
                     JsonNode node = objectMapper.readTree(value);
                     if (node.has("entityType") && node.has("newData")) {
-                        sendEntityChangeEmail(emailTemplate, node);
+                        if (node.path("newData").isNull()) {
+                            sendEntityDeleteEmail(emailTemplate, node);
+                        } else {
+                            sendEntityChangeEmail(emailTemplate, node);
+                        }
                         return;
                     }
                 }
@@ -91,6 +95,16 @@ public class EmailService {
         String changesHtml = buildChangeSummary(node.path("oldData"), node.path("newData"));
         String subject = emailTemplate.getSubject().replace("${entityType}", entityType);
         String body = emailTemplate.getBody().replace("${entityType}", entityType).replace("${changes}", changesHtml);
+        sendEmailMessage(emailConfig.getTo(), body, subject, true);
+    }
+
+    private void sendEntityDeleteEmail(EmailTemplate emailTemplate, JsonNode node) {
+        String entityType = node.path("entityType").asText();
+        JsonNode oldData = node.path("oldData");
+        String name = escapeHtml(oldData.path("name").asText("-"));
+        String deviceSerialNumber = escapeHtml(oldData.path("deviceSerialNumber").asText("-"));
+        String subject = emailTemplate.getSubject().replace("${entityType}", entityType);
+        String body = emailTemplate.getBody().replace("${entityType}", entityType).replace("${name}", name).replace("${deviceSerialNumber}", deviceSerialNumber);
         sendEmailMessage(emailConfig.getTo(), body, subject, true);
     }
 

@@ -91,3 +91,66 @@ email:
           </table>
         </body>
         </html>
+    ENTITY_DELETE_DEFAULT:
+      subject: '${entityType} Deleted'
+      body: |
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>${entityType} Deleted</title>
+        </head>
+        <body style="margin:0;padding:0;background-color:#f4f6f8;font-family:'Segoe UI', Arial, sans-serif;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8;padding:30px 0;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.08);">
+        
+                  <tr>
+                    <td style="background-color:#c0392b;padding:22px 30px;">
+                      <h2 style="margin:0;color:#ffffff;font-size:20px;font-weight:600;">
+                        ${entityType} Deleted
+                      </h2>
+                    </td>
+                  </tr>
+        
+                  <tr>
+                    <td style="padding:25px 30px;">
+                      <p style="font-size:14px;color:#333333;margin:0 0 15px 0;">
+                        Hi,
+                      </p>
+                      <p style="font-size:14px;color:#333333;margin:0 0 20px 0;">
+                        The following <strong>${entityType}</strong> was deleted:
+                      </p>
+        
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                             style="border-collapse:collapse;border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;">
+                        <tbody>
+                          <tr style="background-color:#ffffff;">
+                            <td style="padding:10px 12px;font-size:13px;color:#333333;border-bottom:1px solid #eeeeee;font-weight:600;">Name</td>
+                            <td style="padding:10px 12px;font-size:13px;color:#333333;border-bottom:1px solid #eeeeee;">${name}</td>
+                          </tr>
+                          <tr style="background-color:#f9fafb;">
+                            <td style="padding:10px 12px;font-size:13px;color:#333333;border-bottom:1px solid #eeeeee;font-weight:600;">Device Serial Number</td>
+                            <td style="padding:10px 12px;font-size:13px;color:#333333;border-bottom:1px solid #eeeeee;">${deviceSerialNumber}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+        
+                  <tr>
+                    <td style="padding:18px 30px;background-color:#fafafa;border-top:1px solid #eeeeee;">
+                      <p style="font-size:12px;color:#888888;margin:0;">
+                        Yours sincerely,<br>
+                        Digital Pathology Team
+                      </p>
+                    </td>
+                  </tr>
+        
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
