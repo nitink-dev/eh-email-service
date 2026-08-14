@@ -93,8 +93,9 @@ public class EmailService {
     private void sendEntityChangeEmail(EmailTemplate emailTemplate, JsonNode node) {
         String entityType = node.path("entityType").asText();
         String changesHtml = buildChangeSummary(node.path("oldData"), node.path("newData"));
-        String subject = emailTemplate.getSubject().replace("${entityType}", entityType);
-        String body = emailTemplate.getBody().replace("${entityType}", entityType).replace("${changes}", changesHtml);
+        String name = escapeHtml(resolveEntityName(node.path("newData")));
+        String subject = emailTemplate.getSubject().replace("${entityType}", entityType).replace("${name}", name);
+        String body = emailTemplate.getBody().replace("${entityType}", entityType).replace("${changes}", changesHtml).replace("${name}", name);
         sendEmailMessage(emailConfig.getTo(), body, subject, true);
     }
 
@@ -106,6 +107,16 @@ public class EmailService {
         String subject = emailTemplate.getSubject().replace("${entityType}", entityType);
         String body = emailTemplate.getBody().replace("${entityType}", entityType).replace("${name}", name).replace("${deviceSerialNumber}", deviceSerialNumber);
         sendEmailMessage(emailConfig.getTo(), body, subject, true);
+    }
+
+    private String resolveEntityName(JsonNode newData) {
+        if (newData.has("name") && !newData.path("name").asText("").isBlank()) {
+            return newData.path("name").asText("-");
+        }
+        if (newData.has("barcode") && !newData.path("barcode").asText("").isBlank()) {
+            return newData.path("barcode").asText("-");
+        }
+        return "-";
     }
 
     /**

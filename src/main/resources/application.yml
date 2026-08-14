@@ -26,7 +26,7 @@ management:
 email:
   templates:
     ENTITY_CHANGE_DEFAULT:
-      subject: '${entityType} Configuration Updated'
+      subject: '${entityType} Configuration Updated - ${name}'
       body: |
         <!DOCTYPE html>
         <html lang="en">
@@ -56,7 +56,7 @@ email:
                         Hi,
                       </p>
                       <p style="font-size:14px;color:#333333;margin:0 0 20px 0;">
-                        The following changes were made to <strong>${entityType}</strong>:
+                        The following changes were made to <strong>${entityType}</strong>: <strong>${name}</strong>
                       </p>
 
                       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
