@@ -1,0 +1,298 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dicom-proxy-svc
+  namespace: dicomproxysvc-ns
+spec:
+  serviceName: dicom-proxy   # ✅ REQUIRED
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: dicom-proxy-svc
+
+  template:
+    metadata:
+      labels:
+        app: dicom-proxy-svc
+
+    spec:
+      serviceAccountName: proxysvc-sa
+
+      # ✅ FIX PVC PERMISSION ISSUE
+      securityContext:
+        fsGroup: 999
+
+      nodeSelector:
+        cloud.google.com/gke-nodepool: eh-qa-io-perf-node-pool-2
+
+      # ✅ INIT CONTAINER (create /tmp dirs)
+      initContainers:
+        - name: init-nginx-tmp
+          image: busybox
+          command:
+            - /bin/sh
+            - -c
+            - |
+              mkdir -p /tmp/nginx_client_temp \
+                       /tmp/nginx_proxy_temp \
+                       /tmp/nginx_fastcgi_temp \
+                       /tmp/nginx_uwsgi_temp \
+                       /tmp/nginx_scgi_temp && \
+              chmod -R 777 /tmp
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      containers:
+
+        # ✅ NGINX TLS SIDECAR
+        - name: nginx-tls
+          image: nginx:latest
+          ports:
+            - containerPort: 443
+
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+
+          volumeMounts:
+            - name: tls-cert
+              mountPath: /etc/nginx/certs
+              readOnly: true
+
+            # ✅ only ONE file into conf.d
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+
+            # ✅ main nginx config
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+
+            - name: tmp
+              mountPath: /tmp
+
+        # ✅ YOUR EXISTING APP (UNCHANGED)
+        - name: dicom-proxy-svc
+          image: us-central1-docker.pkg.dev/prj-d-dp/dicom-proxy/proxy:1.0
+          ports:
+            - containerPort: 8080
+
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+        # ✅ CLEANUP SIDECAR
+        - name: tmp-cleaner
+          image: busybox
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+          command:
+            - /bin/sh
+            - -c
+            - |
+              while true; do
+                echo "Cleaning tmp files..."
+                find /tmp -type f -name "tmp*" -mmin +60 -delete
+                sleep 300
+              done
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: tls-cert
+          secret:
+            secretName: proxy-tls   # ✅ from Vault
+
+        - name: nginx-config
+          configMap:
+            name: dicom-nginx-config
+
+  volumeClaimTemplates:
+    - metadata:
+        name: tmp
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: premium-rwo
+        resources:
+          requests:
+            storage: 80Gi
+
+
+
+# apiVersion: apps/v1
+# kind: StatefulSet
+# metadata:
+#   name: dicom-proxy-svc
+#   namespace: dicomproxysvc-ns
+# spec:
+#   serviceName: dicom-proxy   # matches headless service
+#   replicas: 2
+
+#   selector:
+#     matchLabels:
+#       app: dicom-proxy-svc
+
+#   template:
+#     metadata:
+#       labels:
+#         app: dicom-proxy-svc
+
+#     spec:
+#       serviceAccountName: proxysvc-sa
+
+#       securityContext:
+#         fsGroup: 999   # FIX PVC PERMISSION ISSUE
+
+#       nodeSelector:
+#         cloud.google.com/gke-nodepool: eh-qa-io-perf-node-pool-2
+
+#       initContainers:
+#         - name: init-nginx-tmp
+#           image: busybox
+#           command:
+#             - /bin/sh
+#             - -c
+#             - |
+#               mkdir -p /tmp/nginx_client_temp \
+#                        /tmp/nginx_proxy_temp \
+#                        /tmp/nginx_fastcgi_temp \
+#                        /tmp/nginx_uwsgi_temp \
+#                        /tmp/nginx_scgi_temp && \
+#               chmod -R 777 /tmp
+#           volumeMounts:
+#             - name: tmp
+#               mountPath: /tmp
+
+#       containers:
+
+#         # NGINX SIDEcar (TLS)
+#         - name: nginx-tls
+#           image: nginx:latest
+
+#           ports:
+#             - containerPort: 443
+
+#           securityContext:
+#             runAsUser: 999
+#             runAsGroup: 999
+
+#           volumeMounts:
+#             - name: tls-cert
+#               mountPath: /etc/nginx/certs
+#               readOnly: true
+
+#             - name: nginx-config
+#               mountPath: /etc/nginx/conf.d
+
+#             - name: tmp
+#               mountPath: /tmp
+
+#         # EXISTING APP (WITH INTERNAL NGINX)
+#         - name: dicom-proxy-svc
+#           image: us-central1-docker.pkg.dev/prj-d-dp/dicom-proxy/proxy:1.0
+
+#           ports:
+#             - containerPort: 8080
+
+#           securityContext:
+#             runAsUser: 999
+#             runAsGroup: 999
+
+#           volumeMounts:
+#             - name: tmp
+#               mountPath: /tmp
+
+#         # CLEANUP SIDECAR
+#         - name: tmp-cleaner
+#           image: busybox
+
+#           securityContext:
+#             runAsUser: 999
+#             runAsGroup: 999
+
+#           command:
+#             - /bin/sh
+#             - -c
+#             - |
+#               while true; do
+#                 echo "Cleaning tmp files..."
+#                 find /tmp -type f -name "tmp*" -mmin +60 -delete
+#                 sleep 300
+#               done
+
+#           volumeMounts:
+#             - name: tmp
+#               mountPath: /tmp
+
+#       volumes:
+#         - name: tls-cert
+#           secret:
+#             secretName: proxy-tls
+
+#         - name: nginx-config
+#           configMap:
+#             name: dicom-nginx-config
+
+#   volumeClaimTemplates:
+#     - metadata:
+#         name: tmp
+#       spec:
+#         accessModes:
+#           - ReadWriteOnce
+#         storageClassName: premium-rwo
+#         resources:
+#           requests:
+#             storage: 80Gi
+
+
+
+
+
+
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: dicom-proxy-svc
+#   namespace: dicomproxysvc-ns
+# spec:
+#   replicas: 2
+#   selector:
+#     matchLabels:
+#       app: dicom-proxy-svc
+#   template:
+#     metadata:
+#       labels:
+#         app: dicom-proxy-svc
+#     spec:
+#       serviceAccountName: proxysvc-sa
+#       nodeSelector:
+#         cloud.google.com/gke-nodepool: eh-qa-io-perf-node-pool-2
+#       containers:
+#         - name: dicom-proxy-svc
+#           image: us-central1-docker.pkg.dev/prj-d-dp/dicom-proxy/proxy:1.0
+#           ports:
+#             - containerPort: 8080
+#           resources:
+#             requests:
+#               cpu: 500m
+#               memory: 768Mi
+#             limits:
+#               cpu: 1500m
+#               memory: 1.5Gi
+#           volumeMounts:
+#             - name: tmp
+#               mountPath: /tmp
+#       volumes:
+#         - name: tmp
+#           emptyDir: {}
