@@ -232,6 +232,48 @@ email:
 
         Yours sincerely,  
         Digital Pathology Team
+    ENTITY_CREATE_DEFAULT:
+      subject: '${entityType} Configuration Created - ${name}'
+      body: |
+        <p>Dear Team,</p>
+        <p>The following <strong>${entityType}</strong> was created: <strong>${name}</strong>.</p>
+        <table style="border-collapse:collapse;width:100%;">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:10px 12px;font-size:13px;background-color:#f3f4f6;">Field</th>
+              <th style="text-align:left;padding:10px 12px;font-size:13px;background-color:#f3f4f6;">Previous Value</th>
+              <th style="text-align:left;padding:10px 12px;font-size:13px;background-color:#f3f4f6;">New Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${changes}
+          </tbody>
+        </table>
+        <p>Best regards,<br/>Digital Pathology Team</p>
+    ENTITY_CHANGE_DEFAULT:
+      subject: '${entityType} Configuration Updated - ${name}'
+      body: |
+        <p>Dear Team,</p>
+        <p>The following <strong>${entityType}</strong> was updated: <strong>${name}</strong>.</p>
+        <table style="border-collapse:collapse;width:100%;">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:10px 12px;font-size:13px;background-color:#f3f4f6;">Field</th>
+              <th style="text-align:left;padding:10px 12px;font-size:13px;background-color:#f3f4f6;">Previous Value</th>
+              <th style="text-align:left;padding:10px 12px;font-size:13px;background-color:#f3f4f6;">New Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${changes}
+          </tbody>
+        </table>
+        <p>Best regards,<br/>Digital Pathology Team</p>
+    ENTITY_DELETE_DEFAULT:
+      subject: '${entityType} Configuration Deleted'
+      body: |
+        <p>Dear Team,</p>
+        <p>The following <strong>${entityType}</strong> was deleted: <strong>${name}</strong> (Device Serial Number: ${deviceSerialNumber}).</p>
+        <p>Best regards,<br/>Digital Pathology Team</p>
     IBEX_SLIDE_CREATION_ERROR:
       subject: 'Slide Analysis Failure Notification – Technical Error Encountered'
       body: |
