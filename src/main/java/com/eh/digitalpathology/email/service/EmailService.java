@@ -111,7 +111,7 @@ public class EmailService {
 
     private String resolveEntityName(JsonNode newData) {
         if (newData.has("name") && !newData.path("name").asText("").isBlank()) {
-            return newData.path("name").asText("-");
+            return newData.path("name").asText(" ");
         }
         if (newData.has("barcode") && !newData.path("barcode").asText("").isBlank()) {
             return newData.path("barcode").asText("-");
@@ -138,8 +138,8 @@ public class EmailService {
             JsonNode newVal = newData.path(field);
             if (!Objects.equals(oldVal, newVal)) {
                 String rowBackground = (changedFieldsCount % 2 == 0) ? "#ffffff" : "#f9fafb";
-                String oldText = escapeHtml(oldVal.asText("-"));
-                String newText = escapeHtml(newVal.asText("-"));
+                String oldText = escapeHtml(nodeToDisplayText(oldVal));
+                String newText = escapeHtml(nodeToDisplayText(newVal));
 
                 sb.append("<tr style=\"background-color:").append(rowBackground).append(";\">")
                         .append("<td style=\"padding:10px 12px;font-size:13px;color:#333333;border-bottom:1px solid #eeeeee;font-weight:600;\">")
@@ -168,6 +168,21 @@ public class EmailService {
         log.info("Completed buildChangeSummary. Total fields processed={}, Changed fields={}", totalFieldsProcessed, changedFieldsCount);
         log.debug("Final change summary HTML:\n{}", sb);
         return sb.toString();
+    }
+
+    /**
+     * JsonNode#asText(default) only falls back to the default for a null
+     * value node - object/array nodes return "" from asText(), so nested
+     * fields (e.g. config sub-objects) render blank rows unless handled here.
+     */
+    private String nodeToDisplayText(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) {
+            return "-";
+        }
+        if (node.isValueNode()) {
+            return node.asText("-");
+        }
+        return node.toString();
     }
 
     /**
