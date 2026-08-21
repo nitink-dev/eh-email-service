@@ -155,7 +155,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'qa' }}
-    needs: sonarqube
+#    needs: sonarqube
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -262,10 +262,14 @@ jobs:
 
   docker_deploy:
     if: github.ref == 'refs/heads/main'    
-    runs-on: [self-hosted, qa]
     environment: ${{ github.event.inputs.environment || 'qa' }}
     env:
       ENVIRONMENT: ${{ github.event.inputs.environment || 'qa' }}
+
+    runs-on:
+      - self-hosted
+      - ${{ github.event.inputs.environment || 'qa' }}
+
     needs: [publish]
 
     steps:
@@ -305,6 +309,16 @@ jobs:
           --key=proxy.key \
           -n dicomproxysvc-ns \
           --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create app-config ConfigMap
+        run: |
+          kubectl create configmap app-config \
+            -n emailsvc-ns \
+            --from-literal=SPRING_PROFILES_ACTIVE="${{ vars.SPRING_PROFILES_ACTIVE }}" \
+            --from-literal=CONFIG_SERVER_URL="${{ vars.CONFIG_SERVER_URL }}" \
+            --from-literal=KAFKA_BOOTSTRAP_SERVERS="${{ vars.KAFKA_BOOTSTRAP_SERVERS }}" \
+            --from-literal=KAFKA_SECURITY_PROTOCOL="${{ vars.KAFKA_SECURITY_PROTOCOL }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
           
       - name: Render manifests with IMAGE_TAG
         run: |

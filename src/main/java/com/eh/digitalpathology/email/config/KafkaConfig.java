@@ -57,9 +57,11 @@ public class KafkaConfig {
     @Bean
     public ConcurrentKafkaListenerContainerFactory< String, String > kafkaListenerContainerFactory ( ) {
         ConcurrentKafkaListenerContainerFactory< String, String > factory = new ConcurrentKafkaListenerContainerFactory<>( );
-        factory.setConsumerFactory( consumerFactory( ) );
-        factory.getContainerProperties( ).setAckMode( ContainerProperties.AckMode.MANUAL_IMMEDIATE );
+        factory.setConsumerFactory( consumerFactory() );
+        factory.setConcurrency( kafkaProperties.getListener( ).getConcurrency( ) );
+        factory.getContainerProperties( ).setAckMode( ContainerProperties.AckMode.valueOf( kafkaProperties.getListener( ).getAckMode( ).name( ) ) );
         factory.setCommonErrorHandler( errorHandler( ) );
+
         return factory;
     }
 

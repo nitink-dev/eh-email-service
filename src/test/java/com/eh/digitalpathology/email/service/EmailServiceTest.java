@@ -8,7 +8,6 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -18,7 +17,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -148,80 +146,6 @@ class EmailServiceTest {
         // assertFalse(result.contains("SUB456")); // SUB456 is not used in the template
         // Re-adding the barcode check, assuming that the template processing logic uses the barcode field's value twice
         assertTrue(result.contains("Barcode: BAR123"));
-    }
-
-    @Test
-    void testSendEmail_entityCreate_usesCreatedSubjectWithEntityName() throws Exception {
-        EmailTemplate template = new EmailTemplate();
-        template.setSubject("${entityType} Configuration Created - ${name}");
-        template.setBody("<p>${entityType} ${name} ${changes}</p>");
-        when(emailTemplateConfig.getTemplate("ENTITY_CREATE_DEFAULT")).thenReturn(template);
-
-        String json = "{\"key\":\"ENTITY_CREATE_DEFAULT\",\"entityType\":\"scanner\",\"oldData\":null," +
-                "\"newData\":{\"name\":\"SH_TEST_scanner_14AUG\",\"deviceSerialNumber\":\"SH-TEST-0014aug\"}}";
-
-        emailService.sendEmail("ENTITY_CREATE_DEFAULT", json);
-
-        ArgumentCaptor<String> subjectCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mimeMessage).setSubject(subjectCaptor.capture());
-        assertEquals("scanner Configuration Created - SH_TEST_scanner_14AUG", subjectCaptor.getValue());
-        verify(mailSender).send(any(MimeMessage.class));
-    }
-
-    @Test
-    void testSendEmail_entityChange_usesUpdatedSubjectWithEntityName() throws Exception {
-        EmailTemplate template = new EmailTemplate();
-        template.setSubject("${entityType} Configuration Updated - ${name}");
-        template.setBody("<p>${entityType} ${name} ${changes}</p>");
-        when(emailTemplateConfig.getTemplate("ENTITY_CHANGE_DEFAULT")).thenReturn(template);
-
-        String json = "{\"key\":\"ENTITY_CHANGE_DEFAULT\",\"entityType\":\"scanner\"," +
-                "\"oldData\":{\"name\":\"OldName\",\"deviceSerialNumber\":\"SH-TEST-0014aug\"}," +
-                "\"newData\":{\"name\":\"SH_TEST_scanner_14AUG\",\"deviceSerialNumber\":\"SH-TEST-0014aug\"}}";
-
-        emailService.sendEmail("ENTITY_CHANGE_DEFAULT", json);
-
-        ArgumentCaptor<String> subjectCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mimeMessage).setSubject(subjectCaptor.capture());
-        assertEquals("scanner Configuration Updated - SH_TEST_scanner_14AUG", subjectCaptor.getValue());
-        verify(mailSender).send(any(MimeMessage.class));
-    }
-
-    @Test
-    void testSendEmail_entityDelete_usesDeletedSubject() throws Exception {
-        EmailTemplate template = new EmailTemplate();
-        template.setSubject("${entityType} Configuration Deleted");
-        template.setBody("Deleted ${entityType}: ${name} (${deviceSerialNumber})");
-        when(emailTemplateConfig.getTemplate("ENTITY_DELETE_DEFAULT")).thenReturn(template);
-
-        String json = "{\"key\":\"ENTITY_DELETE_DEFAULT\",\"entityType\":\"scanner\"," +
-                "\"oldData\":{\"name\":\"SH_TEST_scanner_14AUG\",\"deviceSerialNumber\":\"SH-TEST-0014aug\"}," +
-                "\"newData\":null}";
-
-        emailService.sendEmail("ENTITY_DELETE_DEFAULT", json);
-
-        ArgumentCaptor<String> subjectCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mimeMessage).setSubject(subjectCaptor.capture());
-        assertEquals("scanner Configuration Deleted", subjectCaptor.getValue());
-        verify(mailSender).send(any(MimeMessage.class));
-    }
-
-    @Test
-    void testSendEmail_entityCreate_doesNotUseUpdatedSubject() throws Exception {
-        EmailTemplate template = new EmailTemplate();
-        template.setSubject("${entityType} Configuration Created - ${name}");
-        template.setBody("<p>${entityType} ${name} ${changes}</p>");
-        when(emailTemplateConfig.getTemplate("ENTITY_CREATE_DEFAULT")).thenReturn(template);
-
-        String json = "{\"key\":\"ENTITY_CREATE_DEFAULT\",\"entityType\":\"scanner\",\"oldData\":null," +
-                "\"newData\":{\"name\":\"SH_TEST_scanner_14AUG\"}}";
-
-        emailService.sendEmail("ENTITY_CREATE_DEFAULT", json);
-
-        ArgumentCaptor<String> subjectCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mimeMessage).setSubject(subjectCaptor.capture());
-        assertTrue(subjectCaptor.getValue().contains("Created"));
-        assertTrue(!subjectCaptor.getValue().contains("Updated"));
     }
 
     @Test

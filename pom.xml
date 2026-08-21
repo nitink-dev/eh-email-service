@@ -65,6 +65,12 @@
 			<groupId>com.google.cloud.hosted.kafka</groupId>
 			<artifactId>managed-kafka-auth-login-handler</artifactId>
 			<version>1.0.6</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
