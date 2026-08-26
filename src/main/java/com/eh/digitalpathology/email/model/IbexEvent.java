@@ -1,14 +1,16 @@
+/**
+ * Event is used to hold the data regarding events received from IBEX.
+ * Author: Preeti Ankam
+ * Date: November 30, 2024
+ */
+
 package com.eh.digitalpathology.email.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class EmailMessagePayload {
-
-    private String barcode;
-    private int errorCode;
-    private String errorMsg;
-
+public class IbexEvent {
     private String id;
+
     @JsonProperty("event_type")
     private String eventType;
 
@@ -27,16 +29,6 @@ public class EmailMessagePayload {
 
     @JsonProperty("created_at")
     private String createdAt;
-
-    private  String missingTag;
-
-    public String getMissingTag() {
-        return missingTag;
-    }
-
-    public void setMissingTag(String missingTag) {
-        this.missingTag = missingTag;
-    }
 
     public String getId() {
         return id;
@@ -100,29 +92,5 @@ public class EmailMessagePayload {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public String getBarcode() {
-        return barcode;
-    }
-
-    public void setBarcode(String barcode) {
-        this.barcode = barcode;
-    }
-
-    public int getErrorCode() {
-        return errorCode;
-    }
-
-    public void setErrorCode(int errorCode) {
-        this.errorCode = errorCode;
-    }
-
-    public String getErrorMsg() {
-        return errorMsg;
-    }
-
-    public void setErrorMsg(String errorMsg) {
-        this.errorMsg = errorMsg;
     }
 }

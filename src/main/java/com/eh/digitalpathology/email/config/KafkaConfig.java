@@ -1,6 +1,7 @@
 package com.eh.digitalpathology.email.config;
 
 import jakarta.annotation.PostConstruct;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,9 @@ import org.springframework.kafka.listener.CommonErrorHandler;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.Map;
@@ -29,18 +33,19 @@ public class KafkaConfig {
 
     @PostConstruct
     public void logKafkaConfig ( ) {
-        log.info( "Kafka Bootstrap Server: {}", kafkaProperties.getBootstrapServers() );
+        log.info( "Kafka Bootstrap Server: {}", kafkaProperties.getBootstrapServers( ) );
     }
 
 
     @Bean
     public ProducerFactory< String, String > producerFactory ( ) {
         Map< String, Object > props = kafkaProperties.buildProducerProperties( );
+        props.put( ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class );
         return new DefaultKafkaProducerFactory<>( props );
     }
 
-    @Bean( name = "customKafkaTemplate" )
-    public KafkaTemplate< String, String > customKafkaTemplate ( ) {
+    @Bean
+    public KafkaTemplate< String, String > kafkaTemplate ( ) {
         return new KafkaTemplate<>( producerFactory( ) );
     }
 
@@ -49,27 +54,35 @@ public class KafkaConfig {
        =========================== */
 
     @Bean
-    public ConsumerFactory< String, String > consumerFactory ( ) {
+    public ConsumerFactory< String, Object > consumerFactory ( ) {
+
         Map< String, Object > props = kafkaProperties.buildConsumerProperties( );
-        return new DefaultKafkaConsumerFactory<>( props );
+        props.put( JsonDeserializer.TRUSTED_PACKAGES, "*" );
+        props.put( JsonDeserializer.USE_TYPE_INFO_HEADERS, true );
+        props.put( JsonDeserializer.TYPE_MAPPINGS, String.join( ",", "email-envelop:com.eh.digitalpathology.email.model.EmailEnvelop", "slide-error:com.eh.digitalpathology.email.model.SlideErrorInfo",
+                "ibex-event:com.eh.digitalpathology.email.model.IbexEvent", "entity-email:com.eh.digitalpathology.email.model.EntityChangeNotification") );
+
+        JsonDeserializer< Object > deserializer = new JsonDeserializer<>( );
+        return new DefaultKafkaConsumerFactory<>( props, null, new ErrorHandlingDeserializer<>( deserializer ) );
     }
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory< String, String > kafkaListenerContainerFactory ( ) {
-        ConcurrentKafkaListenerContainerFactory< String, String > factory = new ConcurrentKafkaListenerContainerFactory<>( );
-        factory.setConsumerFactory( consumerFactory() );
+    @Bean("kafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory< String, Object > kafkaListenerContainerFactory ( ) {
+
+        ConcurrentKafkaListenerContainerFactory< String, Object > factory = new ConcurrentKafkaListenerContainerFactory<>( );
+        factory.setConsumerFactory( consumerFactory( ) );
         factory.setConcurrency( kafkaProperties.getListener( ).getConcurrency( ) );
+
         factory.getContainerProperties( ).setAckMode( ContainerProperties.AckMode.valueOf( kafkaProperties.getListener( ).getAckMode( ).name( ) ) );
         factory.setCommonErrorHandler( errorHandler( ) );
-
         return factory;
     }
 
     @Bean
     public CommonErrorHandler errorHandler ( ) {
-        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer( customKafkaTemplate( ), ( record, ex ) -> new TopicPartition( "dead-letter-topic", record.partition( ) ) );
-        return new DefaultErrorHandler( recoverer, new FixedBackOff( 0L, 3 )   // retry 3 times
-        );
+
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer( kafkaTemplate( ), ( consumerRecord, ex ) -> new TopicPartition( consumerRecord.topic( ) + ".DLT", consumerRecord.partition( ) ) );
+        return new DefaultErrorHandler( recoverer, new FixedBackOff( 0L, 3 ) );
     }
 
 }
