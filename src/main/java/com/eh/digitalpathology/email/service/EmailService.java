@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class EmailService {
@@ -23,6 +24,7 @@ public class EmailService {
     private static final Logger log = LoggerFactory.getLogger( EmailService.class );
 
     private static final String BARCODE_LITERAL = "${barcode}";
+    private static final Set< String > EXCLUDED_FIELDS = Set.of( "id" );
     private final ObjectMapper objectMapper;
     private final JavaMailSender mailSender;
     private final EmailConfig emailConfig;
@@ -132,6 +134,9 @@ public class EmailService {
         int changedCount = 0;
         for ( Map.Entry< String, Object > entry : newMap.entrySet( ) ) {
             String field = entry.getKey( );
+            if ( EXCLUDED_FIELDS.contains( field ) ) {
+                continue;
+            }
 
             Object oldValue = oldMap.get( field );
             Object newValue = entry.getValue( );
@@ -158,6 +163,9 @@ public class EmailService {
         StringBuilder sb = new StringBuilder( );
         int rowIndex = 0;
         for ( Map.Entry< String, Object > entry : map.entrySet( ) ) {
+            if ( EXCLUDED_FIELDS.contains( entry.getKey( ) ) ) {
+                continue;
+            }
             String rowColor = rowIndex % 2 == 0 ? "#ffffff" : "#f9fafb";
             sb.append( "<tr style=\"background-color:" ).append( rowColor ).append( ";\">" ).append( "<td style=\"padding:10px 12px;" + "font-size:13px;" + "font-weight:600;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( entry.getKey( ) ) ).append( "</td>" )
                     .append( "<td style=\"padding:10px 12px;" + "font-size:13px;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( String.valueOf( entry.getValue( ) ) ) ).append( "</td>" ).append( "</tr>" );
