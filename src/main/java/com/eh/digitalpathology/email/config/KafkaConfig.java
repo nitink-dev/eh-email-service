@@ -81,7 +81,10 @@ public class KafkaConfig {
     @Bean
     public CommonErrorHandler errorHandler ( ) {
 
-        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer( kafkaTemplate( ), ( consumerRecord, ex ) -> new TopicPartition( consumerRecord.topic( ) + ".DLT", consumerRecord.partition( ) ) );
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer( kafkaTemplate( ), ( consumerRecord, ex ) -> {
+            log.error( "Failed record. topic={}, key={}, exception={}", consumerRecord.topic( ), consumerRecord.key( ), ex.getMessage( ), ex );
+            return new TopicPartition( consumerRecord.topic( ) + ".DLT", consumerRecord.partition( ) );
+        } );
         return new DefaultErrorHandler( recoverer, new FixedBackOff( 0L, 3 ) );
     }
 
