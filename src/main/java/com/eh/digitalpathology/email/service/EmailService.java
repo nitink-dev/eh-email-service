@@ -125,37 +125,6 @@ public class EmailService {
         return " ";
     }
 
-//    private < T > String buildChangeSummary ( T oldData, T newData ) {
-//
-//        Map< String, Object > oldMap = objectMapper.convertValue( oldData, new TypeReference<>( ) {} );
-//        Map< String, Object > newMap = objectMapper.convertValue( newData, new TypeReference<>( ) {} );
-//
-//        StringBuilder sb = new StringBuilder( );
-//        int changedCount = 0;
-//        for ( Map.Entry< String, Object > entry : newMap.entrySet( ) ) {
-//            String field = entry.getKey( );
-//            if ( EXCLUDED_FIELDS.contains( field ) ) {
-//                continue;
-//            }
-//
-//            Object oldValue = oldMap == null ? null: oldMap.get(field);
-//            Object newValue = entry.getValue( );
-//            if ( !Objects.equals( oldValue, newValue ) ) {
-//
-//                String rowColor = changedCount % 2 == 0 ? "#ffffff" : "#f9fafb";
-//                sb.append( "<tr style=\"background-color:" ).append( rowColor ).append( ";\">" ).append( "<td style=\"padding:10px 12px;" + "font-size:13px;" + "font-weight:600;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( field ) ).append( "</td>" )
-//                        .append( "<td style=\"padding:10px 12px;" + "color:#c0392b;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( String.valueOf( oldValue ) ) ).append( "</td>" ).append( "<td style=\"padding:10px 12px;" + "color:#27ae60;" + "border-bottom:1px solid #eeeeee;\">" )
-//                        .append( escapeHtml( String.valueOf( newValue ) ) ).append( "</td>" ).append( "</tr>" );
-//                changedCount++;
-//            }
-//        }
-//
-//        if ( changedCount == 0 ) {
-//            sb.append( "<tr><td colspan=\"3\">No changes detected</td></tr>" );
-//        }
-//        return sb.toString( );
-//    }
-
     private < T > String buildChangeSummary ( T oldData, T newData ) {
 
         Map< String, Object > newMap = objectMapper.convertValue( newData, new TypeReference<>( ) {} );
@@ -163,6 +132,9 @@ public class EmailService {
             StringBuilder sb = new StringBuilder( );
             int rowCount = 0;
             for ( Map.Entry< String, Object > entry : newMap.entrySet( ) ) {
+                if ( EXCLUDED_FIELDS.contains( entry.getKey( ) ) ) {
+                    continue;
+                }
                 String rowColor = rowCount % 2 == 0 ? "#ffffff" : "#f9fafb";
                 sb.append( "<tr style=\"background-color:" ).append( rowColor ).append( ";\">" ).append( "<td style=\"padding:10px 12px;font-size:13px;font-weight:600;border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( entry.getKey( ) ) ).append( "</td>" )
                         .append( "<td style=\"padding:10px 12px;color:#27ae60;border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( String.valueOf( entry.getValue( ) ) ) ).append( "</td>" ).append( "</tr>" );
@@ -175,6 +147,9 @@ public class EmailService {
         int changedCount = 0;
         for ( Map.Entry< String, Object > entry : newMap.entrySet( ) ) {
             String field = entry.getKey( );
+            if ( EXCLUDED_FIELDS.contains( field ) ) {
+                continue;
+            }
 
             Object oldValue = oldMap.get( field );
             Object newValue = entry.getValue( );
