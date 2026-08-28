@@ -132,7 +132,7 @@ public class EmailService {
             StringBuilder sb = new StringBuilder( );
             int rowCount = 0;
             for ( Map.Entry< String, Object > entry : newMap.entrySet( ) ) {
-                if ( EXCLUDED_FIELDS.contains( entry.getKey( ) ) ) {
+                if ( EXCLUDED_FIELDS.contains( entry.getKey( ) ) || entry.getValue( ) == null ) {
                     continue;
                 }
                 String rowColor = rowCount % 2 == 0 ? "#ffffff" : "#f9fafb";
@@ -153,7 +153,7 @@ public class EmailService {
 
             Object oldValue = oldMap.get( field );
             Object newValue = entry.getValue( );
-            if ( !Objects.equals( oldValue, newValue ) ) {
+            if ( newValue != null && !Objects.equals( oldValue, newValue ) ) {
 
                 String rowColor = changedCount % 2 == 0 ? "#ffffff" : "#f9fafb";
                 sb.append( "<tr style=\"background-color:" ).append( rowColor ).append( ";\">" ).append( "<td style=\"padding:10px 12px;" + "font-size:13px;" + "font-weight:600;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( field ) ).append( "</td>" )
@@ -176,7 +176,7 @@ public class EmailService {
         StringBuilder sb = new StringBuilder( );
         int rowIndex = 0;
         for ( Map.Entry< String, Object > entry : map.entrySet( ) ) {
-            if ( EXCLUDED_FIELDS.contains( entry.getKey( ) ) ) {
+            if ( EXCLUDED_FIELDS.contains( entry.getKey( ) ) || entry.getValue( ) == null ) {
                 continue;
             }
             String rowColor = rowIndex % 2 == 0 ? "#ffffff" : "#f9fafb";
