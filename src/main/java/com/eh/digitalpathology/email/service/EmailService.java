@@ -153,7 +153,7 @@ public class EmailService {
 
             Object oldValue = oldMap.get( field );
             Object newValue = entry.getValue( );
-            if ( newValue != null && !Objects.equals( oldValue, newValue ) ) {
+            if ( !Objects.equals( oldValue, newValue ) ) {
 
                 String rowColor = changedCount % 2 == 0 ? "#ffffff" : "#f9fafb";
                 sb.append( "<tr style=\"background-color:" ).append( rowColor ).append( ";\">" ).append( "<td style=\"padding:10px 12px;" + "font-size:13px;" + "font-weight:600;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( field ) ).append( "</td>" )
