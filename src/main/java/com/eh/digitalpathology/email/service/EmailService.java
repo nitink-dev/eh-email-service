@@ -24,7 +24,7 @@ public class EmailService {
     private static final Logger log = LoggerFactory.getLogger( EmailService.class );
 
     private static final String BARCODE_LITERAL = "${barcode}";
-    private static final Set< String > EXCLUDED_FIELDS = Set.of( "id" );
+    private static final Set< String > EXCLUDED_FIELDS = Set.of( "id", "deviceId" );
     private final ObjectMapper objectMapper;
     private final JavaMailSender mailSender;
     private final EmailConfig emailConfig;
