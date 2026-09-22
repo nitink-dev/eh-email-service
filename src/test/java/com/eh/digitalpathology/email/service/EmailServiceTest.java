@@ -2,6 +2,7 @@ package com.eh.digitalpathology.email.service;
 
 import com.eh.digitalpathology.email.config.EmailConfig;
 import com.eh.digitalpathology.email.config.EmailTemplateConfig;
+import com.eh.digitalpathology.email.config.FormLabelsProperties;
 import com.eh.digitalpathology.email.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +39,9 @@ class EmailServiceTest {
     private ObjectMapper objectMapper;
 
     @Mock
+    private FormLabelsProperties formLabelsProperties;
+
+    @Mock
     private MimeMessage mimeMessage;
 
     @InjectMocks
@@ -50,6 +54,7 @@ class EmailServiceTest {
         lenient().when( emailConfig.getFrom( ) ).thenReturn( "sender@test.com" );
         lenient().when( emailConfig.getTo( ) ).thenReturn( "user@test.com" );
         lenient().when( emailConfig.getIbexTo( ) ).thenReturn( "ibex@test.com" );
+        lenient().when( formLabelsProperties.getForms( ) ).thenReturn( Map.of( ) );
     }
 
     @Test
