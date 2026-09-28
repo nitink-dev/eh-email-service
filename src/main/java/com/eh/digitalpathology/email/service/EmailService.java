@@ -198,7 +198,7 @@ public class EmailService {
         if ( entityType == null ) {
             return field;
         }
-        Map< String, String > labels = formLabelsProperties.getForms( ).get( entityType.toLowerCase( ) );
+        Map< String, String > labels = formLabelsProperties.getForms( ).get( NotificationEntityType.toKey( entityType ) );
         if ( labels == null ) {
             return field;
         }
