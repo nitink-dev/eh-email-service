@@ -2,9 +2,7 @@ spring:
   application:
     name: eh-email-service
   config:
-    import:
-      - optional:file:config/email-template.yml
-      - optional:file:config/form-labels.yml
+    import: optional:file:config/email-template.yml
   main:
     banner-mode: log
   mail:

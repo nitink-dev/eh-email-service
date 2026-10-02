@@ -2,7 +2,6 @@ package com.eh.digitalpathology.email.service;
 
 import com.eh.digitalpathology.email.config.EmailConfig;
 import com.eh.digitalpathology.email.config.EmailTemplateConfig;
-import com.eh.digitalpathology.email.config.FormLabelsProperties;
 import com.eh.digitalpathology.email.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,14 +29,12 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final EmailConfig emailConfig;
     private final EmailTemplateConfig emailTemplateConfig;
-    private final FormLabelsProperties formLabelsProperties;
 
-    public EmailService ( ObjectMapper objectMapper, JavaMailSender mailSender, EmailConfig emailConfig, EmailTemplateConfig emailTemplateConfig, FormLabelsProperties formLabelsProperties ) {
+    public EmailService ( ObjectMapper objectMapper, JavaMailSender mailSender, EmailConfig emailConfig, EmailTemplateConfig emailTemplateConfig ) {
         this.objectMapper = objectMapper;
         this.mailSender = mailSender;
         this.emailConfig = emailConfig;
         this.emailTemplateConfig = emailTemplateConfig;
-        this.formLabelsProperties = formLabelsProperties;
     }
 
     public EmailTemplate fetchEmailTemplate ( String key ) {
@@ -99,7 +96,7 @@ public class EmailService {
 
         String entityType = notification.entityType( );
         String name = resolveEntityName( notification.newData( ) );
-        String changes = buildChangeSummary( entityType, notification.oldData( ), notification.newData( ) );
+        String changes = buildChangeSummary( notification.oldData( ), notification.newData( ) );
         String subject = template.getSubject( ).replace( "${entityType}", entityType ).replace( "${name}", name );
 
         String body = template.getBody( ).replace( "${entityType}", entityType ).replace( "${name}", name ).replace( "${changes}", changes );
@@ -109,7 +106,7 @@ public class EmailService {
     private < T > void sendEntityDeleteEmail ( EmailTemplate template, EntityChangeNotification< T > notification ) {
 
         String entityType = notification.entityType( );
-        String deletedFields = buildFieldSummary( entityType, notification.oldData( ) );
+        String deletedFields = buildFieldSummary( notification.oldData( ) );
         String subject = template.getSubject( ).replace( "${entityType}", entityType );
         String body = template.getBody( ).replace( "${entityType}", entityType ).replace( "${deletedFields}", deletedFields );
 
@@ -128,7 +125,7 @@ public class EmailService {
         return " ";
     }
 
-    private < T > String buildChangeSummary ( String entityType, T oldData, T newData ) {
+    private < T > String buildChangeSummary ( T oldData, T newData ) {
 
         Map< String, Object > newMap = objectMapper.convertValue( newData, new TypeReference<>( ) {} );
         if ( oldData == null ) {
@@ -139,7 +136,7 @@ public class EmailService {
                     continue;
                 }
                 String rowColor = rowCount % 2 == 0 ? "#ffffff" : "#f9fafb";
-                sb.append( "<tr style=\"background-color:" ).append( rowColor ).append( ";\">" ).append( "<td style=\"padding:10px 12px;font-size:13px;font-weight:600;border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( resolveFieldLabel( entityType, entry.getKey( ) ) ) ).append( "</td>" )
+                sb.append( "<tr style=\"background-color:" ).append( rowColor ).append( ";\">" ).append( "<td style=\"padding:10px 12px;font-size:13px;font-weight:600;border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( entry.getKey( ) ) ).append( "</td>" )
                         .append( "<td style=\"padding:10px 12px;color:#27ae60;border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( String.valueOf( entry.getValue( ) ) ) ).append( "</td>" ).append( "</tr>" );
                 rowCount++;
             }
@@ -159,7 +156,7 @@ public class EmailService {
             if ( !Objects.equals( oldValue, newValue ) ) {
 
                 String rowColor = changedCount % 2 == 0 ? "#ffffff" : "#f9fafb";
-                sb.append( "<tr style=\"background-color:" ).append( rowColor ).append( ";\">" ).append( "<td style=\"padding:10px 12px;" + "font-size:13px;" + "font-weight:600;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( resolveFieldLabel( entityType, field ) ) ).append( "</td>" )
+                sb.append( "<tr style=\"background-color:" ).append( rowColor ).append( ";\">" ).append( "<td style=\"padding:10px 12px;" + "font-size:13px;" + "font-weight:600;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( field ) ).append( "</td>" )
                         .append( "<td style=\"padding:10px 12px;" + "color:#c0392b;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( String.valueOf( oldValue ) ) ).append( "</td>" ).append( "<td style=\"padding:10px 12px;" + "color:#27ae60;" + "border-bottom:1px solid #eeeeee;\">" )
                         .append( escapeHtml( String.valueOf( newValue ) ) ).append( "</td>" ).append( "</tr>" );
                 changedCount++;
@@ -172,7 +169,7 @@ public class EmailService {
         return sb.toString( );
     }
 
-    private < T > String buildFieldSummary ( String entityType, T data ) {
+    private < T > String buildFieldSummary ( T data ) {
 
         Map< String, Object > map = objectMapper.convertValue( data, new TypeReference<>( ) {} );
 
@@ -183,7 +180,7 @@ public class EmailService {
                 continue;
             }
             String rowColor = rowIndex % 2 == 0 ? "#ffffff" : "#f9fafb";
-            sb.append( "<tr style=\"background-color:" ).append( rowColor ).append( ";\">" ).append( "<td style=\"padding:10px 12px;" + "font-size:13px;" + "font-weight:600;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( resolveFieldLabel( entityType, entry.getKey( ) ) ) ).append( "</td>" )
+            sb.append( "<tr style=\"background-color:" ).append( rowColor ).append( ";\">" ).append( "<td style=\"padding:10px 12px;" + "font-size:13px;" + "font-weight:600;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( entry.getKey( ) ) ).append( "</td>" )
                     .append( "<td style=\"padding:10px 12px;" + "font-size:13px;" + "border-bottom:1px solid #eeeeee;\">" ).append( escapeHtml( String.valueOf( entry.getValue( ) ) ) ).append( "</td>" ).append( "</tr>" );
             rowIndex++;
         }
@@ -192,17 +189,6 @@ public class EmailService {
             sb.append( "<tr><td colspan=\"2\">No details available</td></tr>" );
         }
         return sb.toString( );
-    }
-
-    private String resolveFieldLabel ( String entityType, String field ) {
-        if ( entityType == null ) {
-            return field;
-        }
-        Map< String, String > labels = formLabelsProperties.getForms( ).get( NotificationEntityType.toKey( entityType ) );
-        if ( labels == null ) {
-            return field;
-        }
-        return labels.getOrDefault( field, field );
     }
 
     private String populateEmailBody ( String template, EmailEnvelop payload ) {
