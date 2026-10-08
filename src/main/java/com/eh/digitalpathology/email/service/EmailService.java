@@ -95,7 +95,7 @@ public class EmailService {
     private < T > void sendEntityChangeEmail ( EmailTemplate template, EntityChangeNotification< T > notification ) {
 
         String entityType = notification.entityType( );
-        String name = notification.entityName( );
+        String name = resolveEntityName( notification.newData( ) );
         String changes = buildChangeSummary( notification.oldData( ), notification.newData( ) );
         String subject = template.getSubject( ).replace( "${entityType}", entityType ).replace( "${name}", name );
 
@@ -111,6 +111,18 @@ public class EmailService {
         String body = template.getBody( ).replace( "${entityType}", entityType ).replace( "${deletedFields}", deletedFields );
 
         sendEmailMessage( emailConfig.getTo( ), body, subject, true, true );
+    }
+
+    private < T > String resolveEntityName ( T data ) {
+        Map< String, Object > map = objectMapper.convertValue( data, new TypeReference<>( ) {} );
+
+        if ( map.containsKey( "name" ) && map.get( "name" ) != null ) {
+            return String.valueOf( map.get( "name" ) );
+        }
+        if ( map.containsKey( "barcode" ) && map.get( "barcode" ) != null ) {
+            return String.valueOf( map.get( "barcode" ) );
+        }
+        return " ";
     }
 
     private < T > String buildChangeSummary ( T oldData, T newData ) {
