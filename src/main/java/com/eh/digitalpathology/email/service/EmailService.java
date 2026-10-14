@@ -95,7 +95,7 @@ public class EmailService {
     private < T > void sendEntityChangeEmail ( EmailTemplate template, EntityChangeNotification< T > notification ) {
 
         String entityType = notification.entityType( );
-        String name = notification.entityName( );
+        String name = notification.entityName( ) != null ? notification.entityName( ) : " ";
         String changes = buildChangeSummary( notification.oldData( ), notification.newData( ) );
         String subject = template.getSubject( ).replace( "${entityType}", entityType ).replace( "${name}", name );
 
