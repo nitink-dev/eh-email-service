@@ -71,7 +71,7 @@ class KafkaEmailListenerTest {
 
         String key = "ENTITY_UPDATE";
 
-        EntityChangeNotification< Map< String, Object > > notification = new EntityChangeNotification<>( key, "DEVICE", "Scanner-B", Map.of( "name", "Scanner-A" ), Map.of( "name", "Scanner-B" ) );
+        EntityChangeNotification< Map< String, Object > > notification = new EntityChangeNotification<>( key, "DEVICE", Map.of( "name", "Scanner-A" ), Map.of( "name", "Scanner-B" ) );
         assertDoesNotThrow( ( ) -> kafkaEmailListener.entityHandler( key, notification, acknowledgment ) );
 
         verify( emailService ).sendEmail( key, notification );
@@ -126,7 +126,7 @@ class KafkaEmailListenerTest {
 
         String key = "ENTITY_UPDATE";
 
-        EntityChangeNotification< Map< String, Object > > notification = new EntityChangeNotification<>( key, "DEVICE", "New", Map.of( "name", "Old" ), Map.of( "name", "New" ) );
+        EntityChangeNotification< Map< String, Object > > notification = new EntityChangeNotification<>( key, "DEVICE", Map.of( "name", "Old" ), Map.of( "name", "New" ) );
         doThrow( new RuntimeException( "Failure" ) ).when( emailService ).sendEmail( key, notification );
         RuntimeException exception = assertThrows( RuntimeException.class, ( ) -> kafkaEmailListener.entityHandler( key, notification, acknowledgment ) );
         assertEquals( "Failure", exception.getMessage( ) );
